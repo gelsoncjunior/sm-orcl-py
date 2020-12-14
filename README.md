@@ -1,4 +1,4 @@
-# Sobre SM-ORCL (NAO ALTERADO)
+# Sobre SM-ORCL
 
 É uma alternativa simples de executar comandos simples dentro de um banco database Oracle ```<= 12.2.0```.
 
@@ -8,34 +8,34 @@
 
 - É necessário que tenha instalado o cliente SQLPlus correspondente ao seu banco de dados.  [How to install SQLPlus client](https://docs.oracle.com/cd/B19306_01/server.102/b14357/ape.htm)
 
-- Este pacote foi desenvolvido na versão ```v14.8.0``` do NodeJS, recomendamos o uso do ```nvm``` para selecionar a versão a ser utilizada para melhor experiência, execute o comando: ```nvm use v14.8.0``` em seu terminal.
+- Este pacote foi desenvolvido na versão ```v3.8.2``` do Python3, recomendamos o uso dessa versão a ser utilizada para melhor experiência.
 
 # Instalação
 
-- Execute o comando para obter o pacote. ``` npm install --save sm-orcl ```
+- Execute o comando para obter o pacote. ``` pip install smorcl ```
 
 # Usando
 
 - Em seu arquivo realize o import do modulo.
 
-```javascript
-  const ORACLE = require('sm-orcl')
-  const orcl = new ORACLE({
-    ip_address: '0.0.0.0',
-    username: 'username',
-    passowrd: 'password',
-    service_name: 'servicename',
-    port: 'port' //Default is 1521
-  })
+```python
+  from smorcl import Oracle
+  orcl = Oracle(
+    ip_address= '0.0.0.0',
+    username= 'username',
+    passowrd= 'password',
+    service_name= 'servicename',
+    port= 'port'
+  )
 ```
 # Comandos
 
 - keepAliveDb verifica disponibilidade do seu banco de dados.
 
-```javascript
+```python
 ...
-  const orcl = new Oracle(dbora.auth)
-  let response = await orcl.keepAliveDb() 
+  orcl = Oracle(dbora.auth)
+  response = orcl.keepAliveDb()
 ...
 ```
 
