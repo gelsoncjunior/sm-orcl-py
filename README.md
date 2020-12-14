@@ -8,7 +8,7 @@
 
 - É necessário que tenha instalado o cliente SQLPlus correspondente ao seu banco de dados.  [How to install SQLPlus client](https://docs.oracle.com/cd/B19306_01/server.102/b14357/ape.htm)
 
-- Este pacote foi desenvolvido na versão ```v3.8.2``` do Python3, recomendamos o uso dessa versão a ser utilizada para melhor experiência.
+- Este pacote foi desenvolvido na versão ```v3.7.*``` do Python, recomendamos o uso dessa versão a ser utilizada para melhor experiência.
 
 # Instalação
 
@@ -44,17 +44,17 @@
 
 - Exemplo de insert
 
-```javascript
+```python
 ...
-  const orcl = new Oracle(dbora.auth)
+  orcl = Oracle(dbora.auth)
   
-  let payload = {
-    name: 'Fulano Sauro',
-    idade: 23,
-    sexo: 'masculino'
+  payload = {
+    "name": 'Fulano Sauro',
+    "idade": 23,
+    "sexo": 'masculino'
   }
   
- let response = await orcl.insert({ table: 'ex_user',  data: payload, })
+ response = orcl.insert(table='ex_user',  data=payload)
 ...
 ```
 
@@ -63,31 +63,32 @@
 
 - Exemplo de insert com select
 
-```javascript
+```python
 ...
-  const orcl = new Oracle(dbora.auth)
-  let payloadData = {
-    idade: 23
+  orcl = Oracle(dbora.auth)
+  
+  payloadData = {
+    "idade": 23
   }
   
-  let payload = {
-    idade: 23,
-    sexo: 'masculino'
+  payload = {
+    "idade": 23,
+    "sexo": 'masculino'
   }
   
-  let response = await orcl.insertSelect({
-  	tablePrimary: 'ex_user',
-      columnsPrimary: ["name", "email_address"], 
-	  tableSource: 'ex_client', 
-	  columnsSource: ["name", "email_address"],
-      where: { idade: 23 }  
-})
+  response = orcl.insertSelect(
+      tablePrimary= 'ex_user',
+      columnsPrimary= ["name", "email_address"], 
+      tableSource= 'ex_client', 
+      columnsSource= ["name", "email_address"],
+      where= { "idade": 23 }  
+    )
 ...
 ```
 Obs: Caso queira fazer um **where** mais especifico use **handsFreeWhere** ao inves do **where**.
 Ex: 
 ``` 
- handsFreeWhere: `idade >= 18 and uf = "RJ"`
+ handsFreeWhere='idade >= 18 and uf = "RJ"'
 ``` 
 
 ------------
@@ -95,20 +96,19 @@ Ex:
 - Exemplo de delete com/sem where
 - Se informar que ```{ deleteAll: false }```  vai respeitar a regra do **where** e se estiver como ```{ deleteAll: true }``` ele irá ignorar o **where**.
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
-	
-    let payload = { id: 1, email_address: "fulano@ciclano.me" } 
-	
-   let response = await orcl.delete({ table: 'ex_user', deleteAll: false, where: payload })
+    orcl = Oracle(dbora.auth)
+    
+    payload = { "id": 1, "email_address": "fulano@ciclano.me" } 
+    response = orcl.delete( table='ex_user', deleteAll=False, where=payload )
   ...
 ```
 
 Obs: Caso queira fazer um **where** mais especifico use **handsFreeWhere** ao inves do **where**.
 Ex: 
 ``` 
- handsFreeWhere: `idade >= 18 and uf = "RJ"`
+ handsFreeWhere='idade >= 18 and uf = "RJ"'
 ``` 
 
 ------------
@@ -117,46 +117,38 @@ Ex:
 - Exemplo de Update com/sem where
 - Se informar que ```{ updateAll: false }``` vai respeitar a regra do **where** e se estiver como ```{ updateAll: true }``` ele irá ignorar o **where**.
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
+    orcl = Oracle(dbora.auth)
 	
-    let payload = { email_address: "ciclano@fulano.you" } 
+    payload = { "email_address": "ciclano@fulano.you" } 
 	
-   let response = await orcl.update({ table: 'ex_user', data: payload, updateAll: false, where: { id: 1, email_address: "fulano@ciclano.me" } })
+    response = orcl.update(table='ex_user', data=payload, updateAll=False, where={ "email_address": "fulano@ciclano.me" })
   ...
 ```
 Obs: Caso queira fazer um **where** mais especifico use **handsFreeWhere** ao inves do **where**.
 Ex: 
 ``` 
- handsFreeWhere: `idade >= 18 and uf = "RJ"`
+ handsFreeWhere='idade >= 18 and uf = "RJ"'
 ``` 
 
 ------------
 
 - Exemplo de Select
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
+    orcl = Oracle(dbora.auth)
 	
-    let payload = {
-      table: "EX_USER",
-      columns: ["id", "name", "email_address", "modified_date", "created_by"],
-      where: {
-        name: "Fulano",
-        email_address: "fulano@ciclano.me"
-      }, 
-    }
-
-    let response = await orcl.select(payload)
+    columns=["id", "name", "email_address", "modified_date", "created_by"]
+    response = orcl.select(table="EX_USER", columns=columns, where={"name": "Fulano", "email_address": "fulano@ciclano.me"})
   ...
 ```
 
 Obs: Caso queira fazer um **where** mais especifico use **handsFreeWhere** ao inves do **where**.
 Ex: 
 ``` 
- handsFreeWhere: `idade >= 18 and uf = "RJ"`
+ handsFreeWhere='idade >= 18 and uf = "RJ"'
 ``` 
 
 ------------
@@ -164,30 +156,21 @@ Ex:
 Exemplo de Select retornando todas as colunas, como se fosse: **select * from table_name**
 - **ATENÇÃO**: Se colocar columns ```[ " * ", "outra_coluna"]``` vai retornar error, use sempre ``[ " * " ]`` sozinho!
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
-    let payload = {
-      table: "EX_USER",
-      columns: ["*"],
-      where: {
-        name: "Fulano",
-        email_address: "fulano@ciclano.me"
-      }
-    }
-
-   let response = await orcl.select(payload)
+    orcl = Oracle(dbora.auth)
+    response = orcl.select(table="EX_USER", columns=["*"], where={"name": "Fulano", "email_address": "fulano@ciclano.me"})
   ...
 ```
 Obs1: Caso não seja informado  a **columns** ``[ " * " ]`` mantendo somente **table** com ou sem **where** ele retornar todas as colunas.
 Ex:
-```javascript
+```python
 ...
- let payload = {
-      table: "EX_USER",
-      where: {
-        name: "Fulano",
-        email_address: "fulano@ciclano.me"
+    payload = {
+      "table": "EX_USER",
+      "where": {
+        "name": "Fulano",
+        "email_address": "fulano@ciclano.me"
       }
     }
 ...
@@ -195,27 +178,24 @@ Ex:
 Obs2: Caso queira fazer um **where** mais especifico use **handsFreeWhere** ao inves do **where**.
 Ex: 
 ``` 
- handsFreeWhere: `idade >= 18 and uf = "RJ"`
+ handsFreeWhere='idade >= 18 and uf = "RJ"'
 ``` 
 
 ------------
 
 - Exemplo de execute Procedure
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
+    orcl = Oracle(dbora.auth)
 	
-    let payload = {
-      procedure_name: "CREATE_USER",
-      data: {
-         name: 'Fulano Sauro',
-         idade: 23,
-         sexo: 'masculino'
-         }
-    }
+    data = {
+     "name": 'Fulano Sauro',
+     "idade": 23,
+     "sexo": 'masculino'
+     }
 
-   let response = await orcl.exec_procedure(payload)
+   response = orcl.exec_procedure(procedure_name="CREATE_USER", data=data)
   ...
 ```
 
@@ -224,56 +204,15 @@ Ex:
 
 - Exemplo de execute Function
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
-    let payload = {
-      function_name: "CREATE_USER",
-      data: {
-         name: 'Fulano Sauro',
-         idade: 23,
-         sexo: 'masculino'
-         } 
-    }
-
-   let response = await orcl.exec_function(payload)
-  ...
-```
-
-# DMLs
-Recurso de DML é usado para criação, atualização e deleção de tabelas, para usufruir desses comandos é necessário que o usuário informado tenha grant de **create**, **update**, **delete** no schema.
-
-- Exemplo de uma nova tabela
-- **ATENÇÃO**: Por default as informações de **nullable**, **pk** e **unique** são **false**
-
-```javascript
-  ...
-    const orcl = new Oracle(dbora.auth)
-    let payload = {
-      table: "EX_TESTE",
-      columns: [{
-        name: "id",
-        dataType: "number",
-        length: "",
-        nullable: true,
-        pk: true,
-        unique: true,
-        seq: true
-      }, 
-      {
-        name: "name",
-        dataType: "varchar2",
-        length: "(50)",
-      }, 
-      {
-        name: "idade",
-        dataType: "number",
-        length: "",
-      }],
-      trigger: true
-    }
-
-    let response = await orcl.create_table({ table: payload.table, columns: payload.columns, trigger: payload.trigger })
+    orcl = Oracle(dbora.auth)
+    data = {
+     "name": 'Fulano Sauro',
+     "idade": 23,
+     "sexo": 'masculino'
+     } 
+    response = orcl.exec_function(function_name="CREATE_USER", data=data)
   ...
 ```
 
@@ -282,10 +221,10 @@ Recurso de DML é usado para criação, atualização e deleção de tabelas, pa
 - Exemplo de uma drop table
 - **ATENÇÃO**: Por default as informações de **cascade** são **false**.
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
-    let response = await orcl.drop_table({ table: "EX_USER", casc: true })
+    orcl = Oracle(dbora.auth)
+    response = orcl.drop_table(table="EX_USER", casc=True)
   ...
 ```
 
@@ -293,10 +232,10 @@ Recurso de DML é usado para criação, atualização e deleção de tabelas, pa
 
 - Exemplo de uma truncate table
 
-```javascript
+```python
   ...
-    const orcl = new Oracle(dbora.auth)
-    let response = await orcl.truncate({ table: "EX_USER" })
+    orcl = Oracle(dbora.auth)
+    response = orcl.truncate(table="EX_USER")
   ...
 ```
 
