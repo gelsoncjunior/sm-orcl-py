@@ -138,6 +138,16 @@ class Oracle:
             res["data"] = objList
         return res
 
+    def fetchColumnsTable(self, table):
+        query = f"select lower(COLUMN_NAME) as COLUMN_NAME from user_tab_columns where table_name = upper('{table}');"
+        res = self.sqlplus(query)
+        arry = []
+        for col in res["data"]:
+            if 'rows selected' in col:
+                pass
+            arry.append(col)
+        return arry
+
     def exec_procedure(self, procedure_name, data):
         vlr = str(self.objToArrayWithComparisionOfAny(data, '=>')).strip("[]").replace('"', "")
         query = f"begin \n {procedure_name}({vlr}); \n end; \n/"
@@ -152,5 +162,13 @@ class Oracle:
 
     def truncate(self, table):
         query = f'TRUNCATE TABLE {table};'
+        res = self.sqlplus(query)
+        return res
+
+    def drop_table(self, table, casc = None):
+        cascConst = ";"
+        if casc:
+            cascConst = "CASCADE CONSTRAINTS"
+        query = f"DROP TABLE {table} {cascConst}"
         res = self.sqlplus(query)
         return res
