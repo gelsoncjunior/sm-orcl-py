@@ -30,11 +30,11 @@ class Oracle:
 
         return sKey, sValues
 
-    def __objToArrayWithComparisionOfAny(self, data, arrow = None):
+    def __objToArrayWithComparisionOfAny(self, data, arrow=None):
         caracter = "="
-        if arrow: caracter = arrow
+        if arrow:
+            caracter = arrow
         obj = []
-
         idx = 0
         for ky in data.items():
             obj.append(f"{ky[0]} {caracter} '{ky[0+1]}'")
@@ -63,10 +63,6 @@ class Oracle:
         else:
             return existIrregularity
 
-
-    def query(self, query):
-        return self.__sqlplus(sql=query)
-
     def keepAliveDb(self):
         response = self.__sqlplus('select 1 from dual;')
         if response["error"]:
@@ -83,7 +79,7 @@ class Oracle:
         res = self.__sqlplus(query)
         return res
 
-    def insertSelect(self, tablePrimary, columnsPrimary, tableSource, columnsSource, where = None, handsFreeWhere = None):
+    def insertSelect(self, tablePrimary, columnsPrimary, tableSource, columnsSource, where=None, handsFreeWhere=None):
         isExistWhere = ";"
         objWhere = []
 
@@ -100,23 +96,72 @@ class Oracle:
         res = self.__sqlplus(query)
         return res
 
-    def select(self, table, columns, where = None, handsFreeWhere = None):
+    def update(self, table, data, updateAll = True, where = None, handsFreeWhere = None):
+        isExistWhere = ";"
+
+        objUpdate = self.__objToArrayWithComparisionOfAny(data)
+
+        if updateAll:
+            if where or handsFreeWhere:
+                raise LookupError("Remove where and handsFreeWhere where exist updateAll = True")
+            isExistWhere = isExistWhere
+        elif where:
+            if handsFreeWhere:
+                raise LookupError("If use where then remove handsFreeWhere")
+            objWhere = self.__objToArrayWithComparisionOfAny(where)
+            recort = str(objWhere).strip("[]").replace('"', "").replace(',', ' and ')
+            isExistWhere = f" where {recort} ;"
+        elif handsFreeWhere:
+            if where:
+                raise LookupError("If use handsFreeWhere then remove where")
+            isExistWhere = f" where {handsFreeWhere} ;"
+
+        objUpdate = str(objUpdate).strip("[]").replace('"', '')
+        query = f'update {table} set {objUpdate} {isExistWhere}'
+        res = self.__sqlplus(query)
+        return res
+
+    def delete(self, table, deleteAll = True, where = None, handsFreeWhere = None):
+        isExistWhere = ";"
+
+        if deleteAll:
+            if where or handsFreeWhere:
+                raise LookupError("Remove where and handsFreeWhere where exist deleteAll = True")
+            isExistWhere = isExistWhere
+        elif where:
+            if handsFreeWhere:
+                raise LookupError("If use where then remove handsFreeWhere")
+            objWhere = self.__objToArrayWithComparisionOfAny(where)
+            recort = str(objWhere).strip("[]").replace('"', "").replace(',', ' and ')
+            isExistWhere = f" where {recort} ;"
+        elif handsFreeWhere:
+            if where:
+                raise LookupError("If use handsFreeWhere then remove where")
+            isExistWhere = f" where {handsFreeWhere} ;"
+
+        query = f"delete {table} {isExistWhere}"
+        res = self.__sqlplus(query)
+        return res
+
+    def select(self, table, columns, where=None, handsFreeWhere=None):
         isExistWhere = ";"
         objWhere = []
         col = []
         idx = 0
         for column in columns:
-            if idx != len(columns) -1:
+            if idx != len(columns) - 1:
                 col.append(column + "||'|'||")
             else:
                 col.append(column + "'")
             idx += 1
 
-        col = str(col).strip("[]").strip("'\"").replace('"', '').replace(",", "")
+        col = str(col).strip("[]").strip(
+            "'\"").replace('"', '').replace(",", "")
 
         if where:
             objWhere = self.__objToArrayWithComparisionOfAny(where)
-            recort = str(objWhere).strip("[]").replace('"', "").replace(',', ' and ')
+            recort = str(objWhere).strip("[]").replace(
+                '"', "").replace(',', ' and ')
             isExistWhere = f" where {recort} ;"
         elif handsFreeWhere:
             isExistWhere = f" where {handsFreeWhere} ;"
@@ -136,7 +181,8 @@ class Oracle:
                     else:
                         obj[columns[idx]] = i
                     idx += 1
-                if len(obj.values()) != 0: objList.append(obj)
+                if len(obj.values()) != 0:
+                    objList.append(obj)
             res["data"] = objList
         return res
 
@@ -151,13 +197,15 @@ class Oracle:
         return arry
 
     def exec_procedure(self, procedure_name, data):
-        vlr = str(self.__objToArrayWithComparisionOfAny(data, '=>')).strip("[]").replace('"', "")
+        vlr = str(self.__objToArrayWithComparisionOfAny(
+            data, '=>')).strip("[]").replace('"', "")
         query = f"begin \n {procedure_name}({vlr}); \n end; \n/"
         res = self.__sqlplus(query)
         return res
 
     def exec_function(self, function_name, data):
-        vlr = str(self.__objToArrayWithComparisionOfAny(data, '=>')).strip("[]").replace('"', "")
+        vlr = str(self.__objToArrayWithComparisionOfAny(
+            data, '=>')).strip("[]").replace('"', "")
         query = f"select {function_name}({vlr}) as response from dual;"
         res = self.__sqlplus(query)
         return res
@@ -167,7 +215,7 @@ class Oracle:
         res = self.__sqlplus(query)
         return res
 
-    def drop_table(self, table, casc = None):
+    def drop_table(self, table, casc=None):
         cascConst = ";"
         if casc:
             cascConst = "CASCADE CONSTRAINTS"
