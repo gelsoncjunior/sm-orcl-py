@@ -143,11 +143,14 @@ class Oracle:
         res = self.__sqlplus(query)
         return res
 
-    def select(self, table, columns, where=None, handsFreeWhere=None):
+    def select(self, table, columns=None, where=None, handsFreeWhere=None):
         isExistWhere = ";"
-        objWhere = []
         col = []
         idx = 0
+
+        if (columns is None or len(columns) == 1 and columns[0] == '*'):
+            columns = self.fetchColumnsTable(table=table)
+
         for column in columns:
             if idx != len(columns) - 1:
                 col.append(column + "||'|'||")
