@@ -18,6 +18,17 @@ class Oracle:
                 output.append(i)
         return output
 
+    def fetchSeparetedKeyAndValue(self, data):
+        sKey = []
+        sValues = []
+
+        idx = 0
+        for kv in data.items():
+            sKey.append(kv[idx])
+            sValues.append((kv[idx + 1]))
+
+        return sKey, sValues
+
     def objToArrayWithComparisionOfAny(self, data, arrow = None):
         caracter = "="
         if arrow: caracter = arrow
@@ -62,6 +73,31 @@ class Oracle:
         else:
             return {"status": 1, "output": "Successfully connected"}
 
+    def insert(self, table, data):
+        sKey, sValues = self.fetchSeparetedKeyAndValue(data)
+        key = str(sKey).strip('[]').replace("'", '')
+        vlr = str(sValues).strip('[]')
+
+        query = f"insert into {table} ( {key} ) values ( {vlr} );"
+        res = self.sqlplus(query)
+        return res
+
+    def insertSelect(self, tablePrimary, columnsPrimary, tableSource, columnsSource, where = None, handsFreeWhere = None):
+        isExistWhere = ";"
+        objWhere = []
+
+        if where:
+            objWhere = self.objToArrayWithComparisionOfAny(where)
+            recort = str(objWhere).strip("[]").replace('"', "").replace(',', ' and ')
+            isExistWhere = f" where {recort} ;"
+        elif handsFreeWhere:
+            isExistWhere = f" where {handsFreeWhere} ;"
+
+        keyColumnsPrimary = str(columnsPrimary).strip('[]').replace("'", '')
+        keyColumnsSource = str(columnsSource).strip('[]').replace("'", '')
+        query = f"insert into {tablePrimary} ( {keyColumnsPrimary} ) select {keyColumnsSource} from {tableSource} {isExistWhere}"
+        print(query)
+
     def select(self, table, columns, where = None, handsFreeWhere = None):
         isExistWhere = ";"
         objWhere = []
@@ -100,4 +136,21 @@ class Oracle:
                     idx += 1
                 if len(obj.values()) != 0: objList.append(obj)
             res["data"] = objList
+        return res
+
+    def exec_procedure(self, procedure_name, data):
+        vlr = str(self.objToArrayWithComparisionOfAny(data, '=>')).strip("[]").replace('"', "")
+        query = f"begin \n {procedure_name}({vlr}); \n end; \n/"
+        res = self.sqlplus(query)
+        return res
+
+    def exec_function(self, function_name, data):
+        vlr = str(self.objToArrayWithComparisionOfAny(data, '=>')).strip("[]").replace('"', "")
+        query = f"select {function_name}({vlr}) as response from dual;"
+        res = self.sqlplus(query)
+        return res
+
+    def truncate(self, table):
+        query = f'TRUNCATE TABLE {table};'
+        res = self.sqlplus(query)
         return res
