@@ -217,6 +217,43 @@ ALTER SESSION DISABLE PARALLEL DML;
         res = self.__sqlplus(query)
         return res
 
+    def select_offset(self, table,  offset, offSetReturn, columns=None):
+        col = []
+        idx = 0
+
+        if columns is None or len(columns) == 1 and columns[0] == '*':
+            columns = self.fetchColumnsTable(table=table)
+
+        for column in columns:
+            if idx != len(columns) - 1:
+                col.append(column + "||'|'||")
+            else:
+                col.append(column + "'")
+            idx += 1
+
+        col = str(col).strip("[]").strip(
+            "'\"").replace('"', '').replace(",", "")
+
+        query = 'select {} from {} offset {} rows fetch next {} rows only;'.format(col, table, (offset * offSetReturn), offSetReturn)
+        res = self.__sqlplus(query)
+
+        objList = []
+        if res["data"] and res["error"] == '':
+            for v in res["data"]:
+                obj = {}
+                data = v.split("|")
+                idx = 0
+                for i in data:
+                    if 'rows selected' in i:
+                        pass
+                    else:
+                        obj[columns[idx]] = i
+                    idx += 1
+                if len(obj.values()) != 0:
+                    objList.append(obj)
+            res["data"] = objList
+        return res
+
     def select(self, table, columns=None, where=None, handsFreeWhere=None):
         isExistWhere = ";"
         col = []
